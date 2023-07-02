@@ -5,26 +5,39 @@ class CharacterControllerApi {
   late String name;
   late String? gender;
   late String? age;
-  late dynamic iconImage;
+  late var iconImage;
   late int id;
   late String? descriptionChar;
-  late bool isFavourite;
+  late var birthday;
+  late var title;
+
   final query = r'''
     query {
-      Character(search: "Hitagi Senjougahara") {
-        name {
-          full
-        }
-        id
-        image {
+  Character(search: "Koyomi Araragi") {
+    name {
+      full
+    }
+    image {
           large
         }
-        gender
-        age
-        description(asHtml: false)
-        isFavourite
+    id
+    gender
+    age
+    description(asHtml: false)
+    dateOfBirth {
+      year
+      month
+      day
+      }
+    media {
+      nodes {
+        title {
+          english
+        }
       }
     }
+  }
+}
   ''';
 
   Future<void> sendCharacterPostRequest() async {
@@ -33,9 +46,8 @@ class CharacterControllerApi {
     final url = Uri.parse('https://graphql.anilist.co');
     final response = await http.post(url, headers: headers, body: body);
 
-    String limitString(String input, int maxLength) {
-      return input.length <= maxLength ? input : input.substring(0, maxLength);
-    }
+    String limitString(String input, int maxLength) =>
+        input.length <= maxLength ? input : input.substring(0, maxLength);
 
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
@@ -48,16 +60,22 @@ class CharacterControllerApi {
       // Converte o link em imagem para bytes
 
       name = character['name']['full'];
+
       gender = character['gender'];
+
       age = character['age'];
+
       id = character['id'];
+
       descriptionChar = character['description'];
-      descriptionChar = limitString(descriptionChar!, 350);
-      isFavourite = character['isFavourite'];
+
+      birthday = character['dateOfBirth'];
+
+      title = character['media']['nodes'];
 
       print(jsonResponse);
     } else {
-      print('Erro na chamada da API: ${response.statusCode}');
+      print('Erro na chamada da API: ${response.body}');
       throw Exception(response.statusCode);
     }
   }

@@ -3,15 +3,13 @@ import 'package:http/http.dart' as http;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
+import '../core/http_headers.dart';
+import '../entities/character_entity.dart';
 import '../repositories/character_repository.dart';
 
 class CharacterControllerApi {
-  late dynamic response;
-
   final _requestApi = HttpRequestApi(); // Instância da classe HttpRequestApi
   final Uri url = Uri.parse("https://graphql.anilist.co");
-
-  final repository = CharacterRepository();
 
   // Função para lidar com erros
   Response _handleError(dynamic e) {
@@ -23,37 +21,38 @@ class CharacterControllerApi {
     );
   }
 
-  Future<CharacterModelos> characterEndpoint(Router router) async {
-    _requestApi.body = await json.encode({'query': repository.query});
-    response = await http.post(
-      url,
-      headers: _requestApi.headers,
-      body: _requestApi.body,
-    );
-
+  Future<void> characterEndpoint(Router router) async {
     router.get('/character', (Request request) async {
-      if (response.statusCode == 200) {
-        final models = CharacterModelos();
-        print(models.name);
+      final query = request.url.queryParameters;
+      final repository = CharacterRepository();
 
-        print(response.body);
+      final response = await http.post(
+        url,
+        headers: _requestApi.headers,
+        body: json.encode(
+          {
+            'query': repository.getQuery(name: query['name'] ?? ''),
+          },
+        ),
+      );
+      final body = json.decode(response.body);
+
+      if (body['errors'] != null) {
         return Response.ok(response.body);
-      } else {
-        print(response.body);
-        return Response.badRequest();
       }
+
+      final models = CharacterEntity.fromJson(body);
+      print(models.name);
+
+      print(response.body);
+      return Response.ok(response.body);
     });
     router.get('/character/icon', (Request request) async {
-      if (response.statusCode == 200) {
-        print(_requestApi.body);
-        try {
-          return Response.ok('ok');
-        } catch (e) {
-          return _handleError(e);
-        }
+      try {
+        return Response.ok('ok');
+      } catch (e) {
+        return _handleError(e);
       }
     });
-    ;
-    return CharacterModelos();
   }
 }

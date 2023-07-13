@@ -3,12 +3,15 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 
 import 'controller/character_controller.dart';
+import 'controller/mangas_controller.dart';
 
 void main() async {
   final app = Router();
 
   final _characterController = CharacterControllerApi();
+  //final _mangasController = MangasControllerApi();
 
+  //_mangasController.viewMangaEndpoint(app); 
   _characterController.characterEndpoint(app);
 
   // Função para lidar com a requisição HTTP

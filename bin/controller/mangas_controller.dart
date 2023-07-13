@@ -14,12 +14,18 @@ import '../repositories/mangas_repository.dart';
 import 'searching_controller.dart';
 
 class SearchMangaController {
-  final _mangaEntity = MangasEntity('', '', '', []);
-  final _search = SearchByTitle();
-  final _requestApi = HttpRequestApi(); // Instância da classe HttpRequestApi
-  final _mangaRepository = MangasRepository();
+  List<MangasEntity> _mangaEntity = [];
+  final SearchByTitle _search;
+  final HttpRequestApi _requestApi; // Instância da classe HttpRequestApi
+  final MangasRepository _mangaRepository;
 
   late dynamic updatedTitlesJson;
+
+  SearchMangaController(
+    this._search,
+    this._requestApi,
+    this._mangaRepository,
+  );
 
   Future<void> searchManga(String searchTerm) async {
     final _body = {
@@ -35,7 +41,7 @@ class SearchMangaController {
     if (_response.statusCode == 200) {
       final data = jsonDecode(_response.body);
 
-      final Set<String> updatedTitles =
+      Set<String> updatedTitles =
           {}; // Utiliza um Set para armazenar os títulos únicos
 
       final mangaDataList = data['data']['Page']['media'] as List<dynamic>;
@@ -45,10 +51,19 @@ class SearchMangaController {
         var romajiTitle = title['romaji'] ?? 'N/A';
         var englishTitle = title['english'] ?? 'N/A';
 
+        _mangaEntity
+            .add(MangasEntity(romajiTitle, englishTitle, 'nativeTitle', []));
+
         await _search.searchAbrangeName(
-            searchTerm, updatedTitles, englishTitle, romajiTitle);
+          searchTerm,
+          updatedTitles,
+          englishTitle,
+          romajiTitle,
+        );
       }
       updatedTitlesJson = jsonEncode(updatedTitles.toList());
+
+      print(updatedTitlesJson);
     } else {
       print('Error: ${_response.statusCode}, ${_response.body}');
     }
@@ -56,7 +71,10 @@ class SearchMangaController {
 }
 
 Future<void> main() async {
-  final _searchMangaController = SearchMangaController();
-
+  final _searchMangaController = SearchMangaController(
+    SearchByTitle(),
+    HttpRequestApi(),
+    MangasRepository(),
+  );
   _searchMangaController.searchManga('One Piece');
 }

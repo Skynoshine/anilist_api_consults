@@ -1,8 +1,4 @@
-import '../entities/mangas_entity.dart';
-
 class SearchByTitle {
-  final _title = MangasEntity('', '', '', []);
-
   bool _containsIgnoredKeywords(String title) {
     final ignoredKeywords = [
       'Special One-Shot',
@@ -36,11 +32,8 @@ class SearchByTitle {
     } // IF que faz a condição primária
   }
 
-  Future<void> searchAbrangeName(String title, Set updatedTitles,
+  Future<Set<String>> searchAbrangeName(String title, Set<String> updatedTitles,
       String englishTitle, String romajiTitle) async {
-    String englishTitle = _title.englishTitle;
-    String romajiTitle = _title.romajiTitle;
-
     if (englishTitle.contains(title) || romajiTitle.contains(title)) {
       if (!_containsIgnoredKeywords(englishTitle) &&
           !_containsIgnoredKeywords(romajiTitle)) {
@@ -55,5 +48,7 @@ class SearchByTitle {
         }
       }
     }
+
+    return updatedTitles;
   }
 }

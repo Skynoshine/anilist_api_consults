@@ -1,17 +1,14 @@
-// ignore_for_file: unused_import
-
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:shelf/shelf.dart';
-import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 
 import '../core/http_headers.dart';
 import '../entities/mangas_entity.dart';
 import '../repositories/mangas_repository.dart';
 
-import 'searching_controller.dart';
+import 'filterByName_controller.dart';
 
 class SearchMangaController {
   List<MangasEntity> _mangaEntity = [];
@@ -27,7 +24,7 @@ class SearchMangaController {
     this._mangaRepository,
   );
 
-  Future<void> searchManga(String searchTerm) async {
+  Future<dynamic> searchManga(String searchTerm) async {
     final _body = {
       'query': _mangaRepository.getTitleQuery(searchTerm: searchTerm)
     };
@@ -54,12 +51,12 @@ class SearchMangaController {
         _mangaEntity
             .add(MangasEntity(romajiTitle, englishTitle, 'nativeTitle', []));
 
-        await _search.searchAbrangeName(
-          searchTerm,
+        await _search.filterBySpecificName(
+          searchTerm.toLowerCase(),
           updatedTitles,
-          englishTitle,
-          romajiTitle,
-        );
+          englishTitle.toString().toLowerCase(),
+          romajiTitle.toString().toLowerCase(),
+        ); //Filtra a pesquisa
       }
       updatedTitlesJson = jsonEncode(updatedTitles.toList());
 
@@ -68,13 +65,15 @@ class SearchMangaController {
       print('Error: ${_response.statusCode}, ${_response.body}');
     }
   }
-}
 
-Future<void> main() async {
-  final _searchMangaController = SearchMangaController(
-    SearchByTitle(),
-    HttpRequestApi(),
-    MangasRepository(),
-  );
-  _searchMangaController.searchManga('One Piece');
+  Future<dynamic> searchTitleAlternativeEndpoint(Router router) async {
+    await searchManga('attack on titan');
+
+    router.get('/v1/manga/title-alternative/', (Request request) async {
+      return Response.ok(
+        await updatedTitlesJson,
+        headers: _requestApi.headers,
+      );
+    });
+  }
 }

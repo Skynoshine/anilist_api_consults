@@ -30,7 +30,7 @@ class SearchMangaController {
     };
 
     final _response = await http.post(
-      _requestApi.url,
+      _requestApi.urlGraphql,
       headers: _requestApi.headers,
       body: jsonEncode(_body),
     );

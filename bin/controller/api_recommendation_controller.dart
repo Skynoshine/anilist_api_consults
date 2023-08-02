@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shelf/shelf.dart';
+import 'package:shelf_router/shelf_router.dart';
 
 import '../repositories/recommendation_repository.dart';
 import '../core/data_config_utils.dart';
@@ -13,7 +15,6 @@ class ApiRecommendation {
   Set<String> titlesInCommon = {};
   List<dynamic> _items = [];
   Set<dynamic> titleResponseApi = {};
-
 
   ApiRecommendation(
     this._utilities,
@@ -54,11 +55,13 @@ class ApiRecommendation {
     return titlesInCommon;
   }
 
-  Future<dynamic> _getBannerTitlesResponse() async {
+  Future<dynamic> _getBannerTitlesResponse(String title) async {
     try {
-      Map<String, dynamic> item = _items
-          .firstWhere((e) => e['title'].toString().contains('Houseki no kuni'));
-      titleResponseApi.add(item);
+      for (var element in recommendation.toList()) {
+        Map<String, dynamic> item =
+            _items.firstWhere((e) => e['title'].toString().contains(element));
+        titleResponseApi.add(item);
+      }
     } catch (e) {
       print('failed to get bannerTitleResponse');
     }
@@ -102,11 +105,22 @@ class ApiRecommendation {
       // Comparar os títulos para ver se tem algum em comum
       await _compareListsTitles();
       //pegar títulos completos
-      await _getBannerTitlesResponse();
+      await _getBannerTitlesResponse(title);
 
       return _titlesAnilist.toString().toLowerCase();
     } else {
       print('Falha na requisição: ${_response.statusCode}');
     }
+  }
+
+  Future<dynamic> setRouter(Router router) async {
+    router.get('/v1/manga/recommendations', (Request request) async {
+      final title = request.url.queryParameters['title'];
+      await fetchRecommendationsAnilist(title!, true);
+      return Response.ok(
+        json.encode({"data": titleResponseApi.toList()}),
+        headers: _utilities.headers,
+      );
+    });
   }
 }

@@ -2,6 +2,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 
+import 'controller/api_recommendation_controller.dart';
 import 'controller/mangas_controller.dart';
 import 'controller/filterByName_controller.dart';
 import 'core/data_config_utils.dart';
@@ -12,7 +13,7 @@ void main() async {
 
   final _searchMangaController = SearchMangaController(
       SearchByTitle(), DataConfigUtils(), MangasRepository());
-
+  final _recommendationsController = ApiRecommendation(DataConfigUtils());
   // Função para lidar com a requisição HTTP
   Future<Response> _handleRequest(Request request) async {
     return app(request);
@@ -25,6 +26,7 @@ void main() async {
   final server = await shelf_io.serve(handler, 'localhost', 8080);
 
   await _searchMangaController.searchTitleAlternativeEndpoint(app);
+  _recommendationsController.setRouter(app);
   //http://localhost:8080/v1/manga/title-alternative
   print('Servidor rodando em ${server.address.host}:${server.port}');
 }

@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
-import '../core/http_headers.dart';
+import '../core/data_config_utils.dart';
 import '../entities/mangas_entity.dart';
 import '../repositories/mangas_repository.dart';
 
@@ -13,7 +13,7 @@ import 'filterByName_controller.dart';
 class SearchMangaController {
   List<MangasEntity> _mangaEntity = [];
   final SearchByTitle _search;
-  final HttpRequestApi _requestApi; // Instância da classe HttpRequestApi
+  final DataConfigUtils _requestApi; // Instância da classe HttpRequestApi
   final MangasRepository _mangaRepository;
 
   late dynamic updatedTitlesJson;
@@ -30,7 +30,7 @@ class SearchMangaController {
     };
 
     final _response = await http.post(
-      _requestApi.urlGraphql,
+      _requestApi.urlAnilist,
       headers: _requestApi.headers,
       body: jsonEncode(_body),
     );

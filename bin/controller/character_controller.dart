@@ -3,12 +3,12 @@ import 'package:http/http.dart' as http;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
-import '../core/http_headers.dart';
+import '../core/data_config_utils.dart';
 import '../entities/character_entity.dart';
 import '../repositories/character_repository.dart';
 
 class CharacterControllerApi {
-  final _requestApi = HttpRequestApi(); // Instância da classe HttpRequestApi
+  final _requestApi = DataConfigUtils(); // Instância da classe HttpRequestApi
   final Uri url = Uri.parse("https://graphql.anilist.co");
 
   // Função para lidar com erros

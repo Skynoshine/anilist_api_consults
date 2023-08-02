@@ -1,34 +1,37 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import '../bin/repositories/recommendation_repository.dart';
-import 'core/http_headers.dart';
+import '../repositories/recommendation_repository.dart';
+import '../core/data_config_utils.dart';
 
 class ApiRecommendation {
-  final HttpRequestApi _requestApi;
+  final DataConfigUtils _utilities;
 
-  List<String> _titlesBanners = [];
+  List<String> titlesBanners = [];
   List<String> _titlesAnilist = [];
   Set<String> recommendation = {};
-  Set<String> _titlesInCommon = {};
+  Set<String> titlesInCommon = {};
+  List<dynamic> _items = [];
+  Set<dynamic> titleResponseApi = {};
+
 
   ApiRecommendation(
-    this._requestApi,
+    this._utilities,
   );
 
   Future<Object> _fetchTitlesFromBanners(bool showTitles) async {
-    final response = await http.get(_requestApi.urlRecommendations);
+    final response = await http.get(_utilities.urlBannersApi);
 
     if (response.statusCode == 200) {
       final decodedData = json.decode(response.body) as Map<String, dynamic>;
-    
-      final List<dynamic> items = decodedData['data'] as List<dynamic>;
-      _titlesBanners = items.map((item) => item['title'].toString()).toList();
+
+      _items = decodedData['data'] as List<dynamic>;
+      titlesBanners = _items.map((item) => item['title'].toString()).toList();
 
       if (showTitles) {
-        print('\nbanners titles:${_titlesBanners.toString().toLowerCase()}');
+        print('\nbanners titles:${titlesBanners.toString()}');
       }
-      return _titlesBanners;
+      return titlesBanners;
     } else {
       print('Falha na requisição: ${response.statusCode}');
       return [];
@@ -39,26 +42,37 @@ class ApiRecommendation {
     Set<String> setTitlesAnilist =
         _titlesAnilist.map((title) => title.toLowerCase().trim()).toSet();
     Set<String> setTitlesBanners =
-        _titlesBanners.map((title) => title.toLowerCase().trim()).toSet();
+        titlesBanners.map((title) => title.toLowerCase().trim()).toSet();
 
-    _titlesInCommon = setTitlesAnilist.intersection(setTitlesBanners);
+    titlesInCommon = setTitlesAnilist.intersection(setTitlesBanners);
 
-    if (_titlesInCommon.isNotEmpty) {
-      recommendation.add(_titlesInCommon.toString());
-      print('\ntitlesInCommon: $_titlesInCommon');
+    if (titlesInCommon.isNotEmpty) {
+      recommendation.add(titlesInCommon.toString());
     } else {
-     recommendation.add('n/a'); 
+      recommendation.add('n/a');
+    }
+    return titlesInCommon;
+  }
+
+  Future<dynamic> _getBannerTitlesResponse() async {
+    try {
+      Map<String, dynamic> item = _items
+          .firstWhere((e) => e['title'].toString().contains('Houseki no kuni'));
+      titleResponseApi.add(item);
+    } catch (e) {
+      print('failed to get bannerTitleResponse');
     }
   }
 
-  Future<dynamic> _fetchRecommendationsAnilist(String title) async {
+  Future<dynamic> fetchRecommendationsAnilist(
+      String title, bool showTitles) async {
     final _recommendationRepository = RecommendationRepository();
 
     final body = {'query': _recommendationRepository.getQuery(title: title)};
 
     final _response = await http.post(
-      _requestApi.urlGraphql,
-      headers: _requestApi.headers,
+      _utilities.urlAnilist,
+      headers: _utilities.headers,
       body: jsonEncode(body),
     );
 
@@ -80,22 +94,19 @@ class ApiRecommendation {
           _titlesAnilist.add(titleRomaji);
         }
       }
-      print('\ntitles anilist:${_titlesAnilist.toString().toLowerCase()}');
-
+      if (showTitles) {
+        print('\ntitles anilist:${_titlesAnilist.toString()}');
+      }
       // Chama fetchTitlesFromApi para preencher _titlesBanners
-      await _fetchTitlesFromBanners(true);
+      await _fetchTitlesFromBanners(false);
       // Comparar os títulos para ver se tem algum em comum
       await _compareListsTitles();
+      //pegar títulos completos
+      await _getBannerTitlesResponse();
 
       return _titlesAnilist.toString().toLowerCase();
     } else {
       print('Falha na requisição: ${_response.statusCode}');
     }
   }
-}
-
-void main() async {
-  final apiRecommendation = ApiRecommendation(HttpRequestApi());
-  // Aguarda recommendations para preencher _titlesAnilist
-  await apiRecommendation._fetchRecommendationsAnilist("made in abyss");
 }

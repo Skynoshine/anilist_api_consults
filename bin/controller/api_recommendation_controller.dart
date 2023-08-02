@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
+import '../entities/mangas_entity.dart';
 import '../repositories/recommendation_repository.dart';
 import '../core/data_config_utils.dart';
 
@@ -98,6 +99,13 @@ class ApiRecommendation {
         }
       }
       if (showTitles) {
+        print('From json --------------------------');
+        final listManga = nodes
+            .map((e) => MangasEntity.fromAnilistRecommendations(e))
+            .toList();
+        for (var element in listManga) {
+          print(element.romajiTitle);
+        }
         print('\ntitles anilist:${_titlesAnilist.toString()}');
       }
       // Chama fetchTitlesFromApi para preencher _titlesBanners

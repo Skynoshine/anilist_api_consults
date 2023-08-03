@@ -13,7 +13,7 @@ class ApiRecommendation {
   List<String> _titlesAnilist = [];
   Set<String> recommendation = {};
   Set<String> titlesInCommon = {};
-  List<dynamic> _items = [];
+
   Set<dynamic> titleResponseApi = {};
 
   Future<String> _getRecommendationsAnilist(
@@ -55,8 +55,11 @@ class ApiRecommendation {
     return _titlesAnilist.toString().toLowerCase();
   }
 
-  Future<List<String>> _getTitlesFromBanners(bool showTitles) async {
+  Future<({List<String> titles, List<dynamic> items})> _getTitlesFromBanners(
+    bool showTitles,
+  ) async {
     final response = await http.get(_utilities.urlBannersApi);
+    List _items = [];
 
     if (response.statusCode == 200) {
       final decodedData = json.decode(response.body) as Map<String, dynamic>;
@@ -70,7 +73,7 @@ class ApiRecommendation {
     } else {
       print('Falha na requisição: ${response.statusCode}');
     }
-    return titlesBanners;
+    return (titles: titlesBanners, items: _items);
   }
 
   Future<Set<String>> _compareListsTitles() async {
@@ -89,16 +92,22 @@ class ApiRecommendation {
     return titlesInCommon;
   }
 
-  Future<Set<dynamic>> _getBannerTitleResponse() async {
+  Future<Set<dynamic>> _getBannerTitleResponse(List items) async {
     try {
       for (var element in recommendation.toList()) {
-        final search = _items.toString().toLowerCase();
-        Map<String, dynamic> item =
-            _items.firstWhere((e) => e['title'].toString().contains(search));
-        titleResponseApi.add(item);
+        final index = items.indexWhere(
+          (e) => e['title'].toString().toLowerCase().contains(element
+              .toLowerCase()
+              .replaceFirst('{', '')
+              .replaceFirst('}', '')),
+        );
+
+        if (index != -1) {
+          titleResponseApi.add(items[index]);
+        }
       }
     } catch (e) {
-      print('failed to get bannerTitleResponse');
+      print('failed to get bannerTitleResponse: $e');
     }
     return titleResponseApi;
   }
@@ -106,17 +115,17 @@ class ApiRecommendation {
   Future<dynamic> running(String titleForSearch) async {
     await _getRecommendationsAnilist(titleForSearch, false);
     // Chama fetchTitlesFromApi para preencher _titlesBanners
-    await _getTitlesFromBanners(false);
+    final result = await _getTitlesFromBanners(false);
     // Comparar os títulos para ver se tem algum em comum
     await _compareListsTitles();
     //pegar títulos completos
-    await _getBannerTitleResponse();
+    await _getBannerTitleResponse(result.items);
   }
 
   Future<dynamic> setRouter(Router router) async {
     router.get('/v1/manga/recommendations', (Request request) async {
       final title = request.url.queryParameters['title'];
-      await _getRecommendationsAnilist(title!, true);
+      await running(title!);
       return Response.ok(
         json.encode({"data": titleResponseApi.toList()}),
         headers: _utilities.headers,

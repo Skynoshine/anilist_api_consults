@@ -7,7 +7,12 @@ import '../entities/recommendation_entity.dart';
 class RecommendationCache {
   late Db _db;
   DataConfigUtils _utils = DataConfigUtils();
-  ApiRecommendation _apiRecommendation = ApiRecommendation(DataConfigUtils());
+  ApiRecommendation _apiRecommendation = ApiRecommendation();
+
+  RecommendationCache(
+    this._utils,
+    this._apiRecommendation,
+  );
 
   Future<dynamic> _dbConnect() async {
     _db = await Db.create(_utils.urlMongoDB);
@@ -66,13 +71,10 @@ class RecommendationCache {
 }
 
 Future<void> main() async {
-  ApiRecommendation apiRecommendation = ApiRecommendation(DataConfigUtils());
-  RecommendationCache cache = RecommendationCache();
+  RecommendationCache cache = RecommendationCache(
+    DataConfigUtils(),
+    ApiRecommendation(),
+  );
 
-  await apiRecommendation.fetchRecommendationsAnilist('made in abyss', false);
-
-  await cache._dbConnect();
-  await cache.insertRecommendation();
-  await cache._showTableContents();
-  await cache._dbClose();
+  await cache._apiRecommendation.running('made in abyss');
 }

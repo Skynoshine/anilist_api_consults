@@ -52,8 +52,7 @@ class RecommendationCache {
   Future<void> insertRecommendation() async {
     DateTime createAt = DateTime.now();
     final List<String> title = await _apiRecommendation.titlesInCommon.toList();
-    final Set<dynamic> recommendation =
-        await _apiRecommendation.titleResponseApi;
+    final Set<dynamic> recommendation = {};
 
     RecommendationEntity entity = RecommendationEntity(
       createAt: createAt,

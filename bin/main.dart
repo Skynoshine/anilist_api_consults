@@ -4,7 +4,7 @@ import 'package:shelf_router/shelf_router.dart';
 
 import 'controller/api_recommendation_controller.dart';
 import 'controller/mangas_controller.dart';
-import 'filterByName.dart';
+import 'core/filterByName.dart';
 import 'core/data_config_utils.dart';
 import 'repositories/mangas_repository.dart';
 

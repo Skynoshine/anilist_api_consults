@@ -8,7 +8,7 @@ import '../core/data_config_utils.dart';
 import '../entities/mangas_entity.dart';
 import '../repositories/mangas_repository.dart';
 
-import '../filterByName.dart';
+import '../core/filterByName.dart';
 
 class SearchMangaController {
   List<MangasEntity> _mangaEntity = [];

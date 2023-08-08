@@ -45,7 +45,7 @@ class ApiRecommendation {
   }
 
   // Obtém títulos dos banners da API
-  Future<List<String>> _getTitlesFromBanners() async {
+  Future<List> _getTitlesFromBanners() async {
     print('running $_getTitlesFromBanners');
 
     final List<String> titlesBanners = [];
@@ -57,6 +57,7 @@ class ApiRecommendation {
       final items = decodedData['data'] as List<dynamic>;
 
       titlesBanners.addAll(items.map((item) => item['title'].toString()));
+      return items;
     } else {
       print('Falha na requisição: ${response.statusCode}');
     }
@@ -86,7 +87,7 @@ class ApiRecommendation {
 
 // Obtém respostas dos títulos dos banners e retorna o resultado
   Future<Set> _getBannerTitleResponse(
-      List<dynamic> items, Set<String> recommendation) async {
+      List items, Set<String> recommendation) async {
     final Set<dynamic> titleResponseApi = {};
 
     print('running $_getBannerTitleResponse');
@@ -121,8 +122,8 @@ void main() async {
 
   final titlesBanners = await recommendation._getTitlesFromBanners();
 
-  final recommendationName =
-      await recommendation._compareListsTitles(titlesBanners, titlesAnilist);
+  final recommendationName = await recommendation._compareListsTitles(
+      titlesBanners.map((e) => e['title'].toString()).toList(), titlesAnilist);
 
   await recommendation._getBannerTitleResponse(
       titlesBanners, recommendationName);

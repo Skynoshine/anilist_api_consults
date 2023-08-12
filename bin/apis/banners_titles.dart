@@ -11,6 +11,12 @@ class BannersTitlesApi {
 
     final response = await http.get(DataConfigUtils.urlBannersApi);
 
+    DataConfigUtils.requestlog(
+      path: DataConfigUtils.urlBannersApi.toString(),
+      responseBody: response.body,
+      responseCode: response.statusCode,
+    );
+
     if (response.statusCode == 200) {
       final decodedData = json.decode(response.body) as Map<String, dynamic>;
       titlesBanners = decodedData['data'] as List<dynamic>;

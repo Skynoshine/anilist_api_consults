@@ -21,6 +21,14 @@ class RecommendationAnilistApi {
       body: jsonEncode(body),
     );
 
+    DataConfigUtils.requestlog(
+      path: DataConfigUtils.urlAnilist.toString(),
+      header: DataConfigUtils.headers,
+      body: body,
+      responseBody: response.body,
+      responseCode: response.statusCode,
+    );
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final nodes = data['data']['Media']['recommendations']['nodes'];

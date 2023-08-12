@@ -1,21 +1,24 @@
 import 'package:mongo_dart/mongo_dart.dart';
 
+import '../controller/recommendation_controller.dart';
 import '../core/data_config_utils.dart';
-import '../controller/api_recommendation_controller.dart';
-import '../entities/recommendation_entity.dart';
 
 class RecommendationCache {
+  RecommendationController _controller = RecommendationController();
   late Db _db;
 
-  ApiRecommendation _apiRecommendation = ApiRecommendation();
-
-  Future<dynamic> _dbConnect() async {
+  Future<Db> _dbConnect() async {
     _db = await Db.create(DataConfigUtils.urlMongoDB);
     try {
       await _db.open();
       print('connected ${_db.databaseName}');
     } catch (e) {
-      print('failed to connect ${_db.databaseName} ${_db.state}');
+      DatabaseErrorLogger.errorLogger(
+        tableName: '',
+        responseBody: e,
+        responseCode: _db.state,
+        operationName: '$_dbConnect()',
+      );
     }
     return _db;
   }
@@ -26,44 +29,33 @@ class RecommendationCache {
         await _db.close();
         print('connection closed ${_db.state}');
       } catch (e) {
-        print('failed to close connection${_db.state}');
+        DatabaseErrorLogger.errorLogger(
+          tableName: _db.uriList.toString(),
+          responseBody: e,
+          responseCode: _db.state,
+        );
       }
-    } else {
-      print('error ${_db.databaseName} ${_db.state}');
-    }
-  }
-
-  Future<void> _showTableContents() async {
-    final collection = _db.collection(DataConfigUtils.collectionDB);
-
-    try {
-      final documents = await collection.find().toList();
-      print(documents);
-    } catch (e) {
-      print('error to show content in${_db.databaseName}, ${_db.state}');
     }
   }
 
   Future<void> insertRecommendation() async {
-    DateTime createAt = DateTime.now();
-
-    RecommendationEntity entity = RecommendationEntity(
-      createAt: createAt,
-      title: title,
-      recommendation: recommendation.toList(),
-    );
+    final dynamic insertEntity = {
+      _controller.entity.createAt,
+      _controller.entity.recommendation,
+      _controller.entity.title,
+    };
 
     try {
-      //await _db.collection(_utils.collectionDB).insert(entity.toJson());
-      print('entity: ${entity.toJson()}');
+      final db = await _dbConnect();
+      await db.collection(DataConfigUtils.collectionDB).insert(insertEntity);
+      print('insert successful');
     } catch (e) {
-      print('error insert');
+      DatabaseErrorLogger.errorLogger(
+        tableName: _db.databaseName,
+
+      );
+    } finally {
+      await _dbClose();
     }
   }
-}
-
-Future<void> main() async {
-  RecommendationCache cache = RecommendationCache();
-
-  await cache._apiRecommendation.running('made in abyss');
 }

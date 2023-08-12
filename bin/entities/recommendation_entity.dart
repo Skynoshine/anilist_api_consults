@@ -1,6 +1,6 @@
 class RecommendationEntity {
   final DateTime createAt;
-  final List<String> title;
+  final String title;
   final List<dynamic> recommendation;
 
   RecommendationEntity({

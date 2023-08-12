@@ -14,6 +14,7 @@ class DataConfigUtils {
 
   static final String urlMongoDB =
       "mongodb+srv://skynoshine:YuXn7nDIYkAOdNjA@cluster0.ajm09w1.mongodb.net/recommendation_cache";
+
   static void requestlog({
     Map<String, dynamic>? header,
     Map<String, dynamic>? body,
@@ -38,5 +39,32 @@ class DataConfigUtils {
     ''';
 
     log(message, name: name ?? '');
+  }
+}
+
+class DatabaseErrorLogger {
+  static void errorLogger({
+    Map<String, dynamic>? queryParameters,
+    dynamic responseBody,
+    dynamic responseCode,
+    required String? tableName,
+    String? operationName,
+  }) {
+    final now = DateTime.now();
+    final formattedDateTime = '${now.day}/${now.month}/${now.year}'
+        ' ${now.hour}:${now.minute}:${now.second}';
+
+    final message = '''
+    ---------------- DATABASE ERROR LOG ----------------
+    --- Timestamp: $formattedDateTime ---
+    --- Table Name: $tableName ---
+    --- Operation Name: ${operationName ?? 'N/A'} ---
+    --- Query Parameters: $queryParameters ---
+    --- Response Body: $responseBody ---
+    --- Response Code: $responseCode ---
+    ---------------- END ----------------
+    ''';
+
+    log(message);
   }
 }

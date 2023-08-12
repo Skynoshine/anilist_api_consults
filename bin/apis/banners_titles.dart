@@ -4,19 +4,19 @@ import 'package:http/http.dart' as http;
 import '../core/data_config_utils.dart';
 
 class BannersTitlesApi {
-  static Future<List<String>> getTitlesFromBanners() async {
+  static Future<List> getTitlesFromBanners() async {
     print('running $getTitlesFromBanners');
 
-    final List<String> titlesBanners = [];
+    List titlesBanners = [];
 
     final response = await http.get(DataConfigUtils.urlBannersApi);
 
     if (response.statusCode == 200) {
       final decodedData = json.decode(response.body) as Map<String, dynamic>;
-      final items = decodedData['data'] as List<dynamic>;
-      print('items: $items');
+      titlesBanners = decodedData['data'] as List<dynamic>;
+      //print('items: $items');
 
-      titlesBanners.addAll(items.map((item) => item['title'].toString()));
+      //titlesBanners.addAll(items.map((item) => item['title'].toString()));
       // return items;
     } else {
       print('Falha na requisição: ${response.statusCode}');
@@ -25,7 +25,8 @@ class BannersTitlesApi {
   }
 
   // Obtém respostas dos títulos dos banners e retorna o resultado
-  static Future<Set> getBannerTitleResponse(List items , Set<String> recommendation) async {
+  static Future<Set> getBannerTitleResponse(
+      List items, Set<String> recommendation) async {
     final Set<dynamic> titleResponseApi = {};
     print('titleResponse: $titleResponseApi');
 

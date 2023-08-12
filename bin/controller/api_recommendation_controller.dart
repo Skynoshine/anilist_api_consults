@@ -31,21 +31,21 @@ class ApiRecommendation {
   // Configura o router para lidar com as solicitações
   Future<void> setRouter(Router router) async {
     router.get('/v1/manga/recommendations', (Request request) async {
-
       final titleQuery = await request.url.queryParameters['title'];
 
-      final List<String> titlesBanners =
-          await BannersTitlesApi.getTitlesFromBanners();
+      final titlesBanners = await BannersTitlesApi.getTitlesFromBanners();
 
       final titlesAnilist =
-          await RecommendationAnilistApi.getRecommendationAnilist(titleQuery!.toLowerCase());
-          print(titleQuery.toLowerCase());
+          await RecommendationAnilistApi.getRecommendationAnilist(
+              titleQuery!.toLowerCase());
+      print(titleQuery.toLowerCase());
 
-      final recommendation =
-          await _compareListsTitles(titlesBanners.map((e) => e['title'].toString()).toList(), titlesAnilist);
+      final recommendation = await _compareListsTitles(
+          titlesBanners.map((e) => e['title'].toString()).toList(),
+          titlesAnilist);
 
-      final titleResponseApi =
-          await BannersTitlesApi.getBannerTitleResponse(titlesBanners, recommendation);
+      final titleResponseApi = await BannersTitlesApi.getBannerTitleResponse(
+          titlesBanners, recommendation);
 
       return Response.ok(
         json.encode({"data": titleResponseApi.toList()}),

@@ -1,14 +1,14 @@
 import 'package:mongo_dart/mongo_dart.dart';
 
-import '../controller/recommendation_controller.dart';
 import '../core/data_config_utils.dart';
 
 class RecommendationCache {
-  RecommendationController _controller = RecommendationController();
   late Db _db;
 
   Future<Db> _dbConnect() async {
-    _db = await Db.create(DataConfigUtils.urlMongoDB);
+    final dbUrl = await DataConfigUtils.getDotenv();
+    _db = await Db.create(dbUrl);
+    
     try {
       await _db.open();
       print('connected ${_db.databaseName}');
@@ -38,21 +38,14 @@ class RecommendationCache {
     }
   }
 
-  Future<void> insertRecommendation() async {
-    final dynamic insertEntity = {
-      _controller.entity.createAt,
-      _controller.entity.recommendation,
-      _controller.entity.title,
-    };
-
+  Future<void> insertRecommendation(entity) async {
     try {
-      final db = await _dbConnect();
-      await db.collection(DataConfigUtils.collectionDB).insert(insertEntity);
+      await _dbConnect();
+      await _db.collection(DataConfigUtils.collectionDB).insert(entity);
       print('insert successful');
     } catch (e) {
       DatabaseErrorLogger.errorLogger(
         tableName: _db.databaseName,
-
       );
     } finally {
       await _dbClose();

@@ -28,8 +28,7 @@ void main() async {
   await _searchMangaController.searchTitleAlternativeEndpoint(app);
 
   //http://localhost:8080/v1/manga/recommendations?title=youjo
-  _recommendationsController.setRouter(app);
-
+  _recommendationsController.router(app);
 
   print('Servidor rodando em ${server.address.host}:${server.port}');
 }

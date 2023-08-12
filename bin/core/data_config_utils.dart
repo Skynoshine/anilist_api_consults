@@ -1,9 +1,18 @@
 import 'dart:developer';
 
+import 'package:dotenv/dotenv.dart' as dotenv;
+
 class DataConfigUtils {
   static final Map<String, String> headers = const {
     'Content-Type': 'application/json'
   };
+
+  static String getDotenv() {
+    var env = dotenv.DotEnv(includePlatformEnvironment: true)..load();
+    env.load();
+    final urlMongoDB = env['MONGODB_URL'];
+    return urlMongoDB!;
+  }
 
   static final Uri urlAnilist = Uri.parse("https://graphql.anilist.co");
 
@@ -11,9 +20,6 @@ class DataConfigUtils {
       Uri.parse('https://monolito.lucas-cm.com.br/v1/recommendations/list');
 
   static final String collectionDB = "recommendation_cache";
-
-  static final String urlMongoDB =
-      "mongodb+srv://skynoshine:YuXn7nDIYkAOdNjA@cluster0.ajm09w1.mongodb.net/recommendation_cache";
 
   static void requestlog({
     Map<String, dynamic>? header,

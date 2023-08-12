@@ -8,9 +8,6 @@ import '../entities/character_entity.dart';
 import '../repositories/character_repository.dart';
 
 class CharacterControllerApi {
-  final _requestApi = DataConfigUtils(); // Instância da classe HttpRequestApi
-  final Uri url = Uri.parse("https://graphql.anilist.co");
-
   // Função para lidar com erros
   Response _handleError(dynamic e) {
     final errorMessage = 'Erro na solicitação: $e';
@@ -27,8 +24,8 @@ class CharacterControllerApi {
       final repository = CharacterRepository();
 
       final response = await http.post(
-        url,
-        headers: _requestApi.headers,
+        DataConfigUtils.urlAnilist,
+        headers: DataConfigUtils.headers,
         body: json.encode(
           {
             'query': repository.getQuery(name: query['name'] ?? ''),

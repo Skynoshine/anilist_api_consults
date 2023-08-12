@@ -1,5 +1,5 @@
 class RecommendationRepository {
-  String getQuery({required String title}) {
+  static String getQuery({required String title}) {
     return '''
     query{
        Media(search: "$title"){

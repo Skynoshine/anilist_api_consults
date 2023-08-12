@@ -13,14 +13,12 @@ import '../core/filterByName.dart';
 class SearchMangaController {
   List<MangasEntity> _mangaEntity = [];
   final SearchByTitle _search;
-  final DataConfigUtils _requestApi; // Instância da classe HttpRequestApi
   final MangasRepository _mangaRepository;
 
   late dynamic updatedTitlesJson;
 
   SearchMangaController(
     this._search,
-    this._requestApi,
     this._mangaRepository,
   );
 
@@ -30,8 +28,8 @@ class SearchMangaController {
     };
 
     final _response = await http.post(
-      _requestApi.urlAnilist,
-      headers: _requestApi.headers,
+      DataConfigUtils.urlAnilist,
+      headers: DataConfigUtils.headers,
       body: jsonEncode(_body),
     );
 
@@ -72,7 +70,7 @@ class SearchMangaController {
     router.get('/v1/manga/title-alternative/', (Request request) async {
       return Response.ok(
         await updatedTitlesJson,
-        headers: _requestApi.headers,
+        headers: DataConfigUtils.headers,
       );
     });
   }

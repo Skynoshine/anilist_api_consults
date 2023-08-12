@@ -31,8 +31,8 @@ class RecommendationController {
     return recommendation;
   }
 
-  Future _getRecommendations(String titleQuery, Response, request) async {
-    RecommendationCache cache = RecommendationCache();
+  Future _getRecommendations(String titleQuery, request) async {
+    final cache = RecommendationCache();
 
     final titlesBanners = await BannersTitlesApi.getTitlesFromBanners();
 
@@ -53,21 +53,24 @@ class RecommendationController {
       recommendation: titleResponseApi.toList(),
     );
 
-    cache.insertRecommendation(entity);
+    cache.insertRecommendation(entity.toJson(), recommendation.toString());
 
     final entityEncoded = jsonEncode(entity.toJson());
-
-    return Response.ok(
-      entityEncoded,
-      headers: DataConfigUtils.headers,
-    );
+    if (titleResponseApi.toList().isNotEmpty) {
+      return Response.ok(
+        entityEncoded,
+        headers: DataConfigUtils.headers,
+      );
+    } else {
+      return Response.badRequest();
+    }
   }
 
   // Configura o router para lidar com as solicitações
   Future<void> router(Router router) async {
     router.get('/v1/manga/recommendations', (Request request) async {
       final titleQuery = await request.url.queryParameters['title'];
-      return _getRecommendations(titleQuery!, Response, request);
+      return _getRecommendations(titleQuery!, request);
     });
   }
 }

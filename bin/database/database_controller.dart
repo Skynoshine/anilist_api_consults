@@ -4,11 +4,12 @@ import '../core/data_config_utils.dart';
 
 class RecommendationCache {
   late Db _db;
+  bool containRecommendation = false;
 
   Future<Db> _dbConnect() async {
     final dbUrl = await DataConfigUtils.getDotenv();
     _db = await Db.create(dbUrl);
-    
+
     try {
       await _db.open();
       print('connected ${_db.databaseName}');
@@ -38,17 +39,50 @@ class RecommendationCache {
     }
   }
 
-  Future<void> insertRecommendation(entity) async {
+  Future<bool> _verifyRecommendation(String toVerify) async {
     try {
-      await _dbConnect();
-      await _db.collection(DataConfigUtils.collectionDB).insert(entity);
-      print('insert successful');
+      final collection = _db.collection(DataConfigUtils.collectionDB);
+      final items = await collection.find().toList();
+
+      for (var item in items) {
+        final recommendations = item['recommendation'] as List<dynamic>;
+        for (var recommendation in recommendations) {
+          final title = recommendation['title'] as String;
+
+          if (title.contains(toVerify)) {
+            return true;
+          }
+          
+        }
+      }
+      return false; // Não encontrou nenhuma recomendação com o título correspondente
     } catch (e) {
-      DatabaseErrorLogger.errorLogger(
-        tableName: _db.databaseName,
-      );
-    } finally {
-      await _dbClose();
+      print('Erro ao obter conteúdo da coleção: $e');
+      return false;
+    }
+  }
+
+  Future<void> insertRecommendation(
+      Map<String, dynamic> entity, String titleToVerify) async {
+    await _dbConnect();
+    await _verifyRecommendation(titleToVerify);
+
+    if (containRecommendation == false) {
+      print(containRecommendation);
+      try {
+        await _db.collection(DataConfigUtils.collectionDB).insert(entity);
+        print('insert sucefull in ${DataConfigUtils.collectionDB}');
+      } catch (e) {
+        DatabaseErrorLogger.errorLogger(
+          tableName: _db.databaseName,
+          responseBody: e,
+          operationName: 'insertRecommendation',
+        );
+      } finally {
+        await _dbClose();
+      }
+    } else {
+      print('já possuímos recomendação para este mangá!');
     }
   }
 }

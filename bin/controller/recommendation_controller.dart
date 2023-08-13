@@ -53,7 +53,7 @@ class RecommendationController {
       recommendation: titleResponseApi.toList(),
     );
 
-    cache.insertRecommendation(entity.toJson(), recommendation.toString());
+    cache.insertRecommendation(entity.toJson(), titleQuery.toString());
 
     final entityEncoded = jsonEncode(entity.toJson());
     if (titleResponseApi.toList().isNotEmpty) {

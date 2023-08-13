@@ -42,20 +42,10 @@ class RecommendationCache {
   Future<bool> _verifyRecommendation(String toVerify) async {
     try {
       final collection = _db.collection(DataConfigUtils.collectionDB);
-      final items = await collection.find().toList();
+      final items = await collection.find({'title': toVerify}).toList();
 
-      for (var item in items) {
-        final recommendations = item['recommendation'] as List<dynamic>;
-        for (var recommendation in recommendations) {
-          final title = recommendation['title'] as String;
-
-          if (title.contains(toVerify)) {
-            return true;
-          }
-          
-        }
-      }
-      return false; // Não encontrou nenhuma recomendação com o título correspondente
+      return items
+          .isNotEmpty; // Não encontrou nenhuma recomendação com o título correspondente
     } catch (e) {
       print('Erro ao obter conteúdo da coleção: $e');
       return false;
@@ -65,7 +55,7 @@ class RecommendationCache {
   Future<void> insertRecommendation(
       Map<String, dynamic> entity, String titleToVerify) async {
     await _dbConnect();
-    await _verifyRecommendation(titleToVerify);
+    containRecommendation = await _verifyRecommendation(titleToVerify);
 
     if (containRecommendation == false) {
       print(containRecommendation);

@@ -39,11 +39,40 @@ class RecommendationCache {
     }
   }
 
-  Future<bool> _verifyRecommendation(String toVerify) async {
+  Future<bool> _compareDateTime(String toVerify) async {
+    bool isMoreSevenDays = false;
+
     try {
       final collection = _db.collection(DataConfigUtils.collectionDB);
       final items = await collection.find({'title': toVerify}).toList();
 
+      final currentDate = DateTime.now();
+
+      for (var item in items) {
+        if (item.containsKey('createAt')) {
+          final createAtString = item['createAt'] as String;
+          final createAt =
+              DateTime.parse(createAtString); // Converter a string em DateTime
+          final difference = currentDate.difference(createAt).inDays;
+
+          if (difference > 7) {
+            //maior que 7 dias
+            return isMoreSevenDays = true;
+          } else {
+            return isMoreSevenDays = false;
+          }
+        }
+      }
+    } catch (e) {
+      print(e);
+    }
+    return isMoreSevenDays;
+  }
+
+  Future<bool> _verifyRecommendation(String toVerify) async {
+    try {
+      final collection = _db.collection(DataConfigUtils.collectionDB);
+      final items = await collection.find({'title': toVerify}).toList();
       return items
           .isNotEmpty; // Não encontrou nenhuma recomendação com o título correspondente
     } catch (e) {
@@ -52,27 +81,43 @@ class RecommendationCache {
     }
   }
 
-  Future<void> insertRecommendation(
-      Map<String, dynamic> entity, String titleToVerify) async {
+  Future<void> updateRecommendation(String titleToUpdate) async {
+    try {
+      final collection = _db.collection(DataConfigUtils.collectionDB);
+      final currentDate = DateTime.now();
+
+      final updateData = {
+        'updatedAt': currentDate.toString(),
+      };
+
+      print('Recommendation $titleToUpdate updated successfully.');
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> insertRecommendation(Map<String, dynamic> entity,
+      String titleToVerify, Set titleResponse) async {
     await _dbConnect();
     containRecommendation = await _verifyRecommendation(titleToVerify);
 
     if (containRecommendation == false) {
-      print(containRecommendation);
+      // Não possui recomendação
       try {
-        await _db.collection(DataConfigUtils.collectionDB).insert(entity);
-        print('insert sucefull in ${DataConfigUtils.collectionDB}');
+        if (titleResponse.isNotEmpty) {
+          await _db.collection(DataConfigUtils.collectionDB).insert(entity);
+          print('insert sucefull in ${DataConfigUtils.collectionDB}');
+        }
       } catch (e) {
         DatabaseErrorLogger.errorLogger(
           tableName: _db.databaseName,
           responseBody: e,
           operationName: 'insertRecommendation',
         );
-      } finally {
-        await _dbClose();
       }
     } else {
       print('já possuímos recomendação para este mangá!');
     }
+    await _dbClose();
   }
 }

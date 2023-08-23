@@ -53,7 +53,8 @@ class RecommendationController {
       recommendation: titleResponseApi.toList(),
     );
 
-    cache.insertRecommendation(entity.toJson(), titleQuery.toString());
+    cache.insertRecommendation(
+        entity.toJson(), titleQuery.toString(), titleResponseApi);
 
     final entityEncoded = jsonEncode(entity.toJson());
     if (titleResponseApi.toList().isNotEmpty) {
@@ -62,7 +63,10 @@ class RecommendationController {
         headers: DataConfigUtils.headers,
       );
     } else {
-      return Response.badRequest();
+      return Response.notFound(
+        entityEncoded,
+        headers: DataConfigUtils.headers,
+      );
     }
   }
 

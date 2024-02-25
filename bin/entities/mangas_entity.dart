@@ -25,7 +25,7 @@ class MangasEntity {
     );
   }
 
-  factory MangasEntity.ManfromAnilistRecommendations(Map<String, dynamic> json) {
+  factory MangasEntity.fromApiRecommendations(Map<String, dynamic> json) {
     return MangasEntity(
       json['mediaRecommendation']['title']['romaji'],
       json['mediaRecommendation']['title']['english'] ?? "",

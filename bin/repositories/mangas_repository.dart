@@ -3,7 +3,7 @@ class MangasRepository {
     return '''
       query {
         Page {
-          media(search: "$searchTerm", type: MANGA) {
+          media(search: "$searchTerm") {
             id
             title {
               romaji

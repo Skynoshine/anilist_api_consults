@@ -3,14 +3,14 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 
 import 'controller/recommendation_controller.dart';
-import 'controller/mangas_controller.dart';
+import 'controller/titles_alternatives_controller.dart';
 import 'core/filterByName.dart';
 import 'repositories/mangas_repository.dart';
 
 void main() async {
   final app = Router();
 
-  final _searchMangaController =
+  final _alternativeTitle =
       SearchMangaController(SearchByTitle(), MangasRepository());
 
   final _recommendationsController = RecommendationController();
@@ -24,8 +24,8 @@ void main() async {
 
   final server = await shelf_io.serve(handler, 'localhost', 8080);
 
-  //http://localhost:8080/v1/manga/title-alternative
-  await _searchMangaController.searchTitleAlternativeEndpoint(app);
+  //http://localhost:8080/v1/manga/title-alternative?title=
+  await _alternativeTitle.searchTitleAlternativeEndpoint(app);
 
   //http://localhost:8080/v1/manga/recommendations?title=youjo senki
   _recommendationsController.router(app);

@@ -71,7 +71,7 @@ class RecommendationController {
   }
 
   // Configura o router para lidar com as solicitações
-  Future<void> router(Router router) async {
+  Future<dynamic> router(Router router) async {
     router.get('/v1/manga/recommendations', (Request request) async {
       final titleQuery = await request.url.queryParameters['title'];
       return _getRecommendations(titleQuery!, request);

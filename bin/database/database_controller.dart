@@ -4,7 +4,8 @@ import '../core/data_config_utils.dart';
 
 class RecommendationCache {
   late Db _db;
-  bool containRecommendation = false;
+  bool _containRecommendation = false;
+  bool _containAlternativeT = false;
 
   Future<Db> _dbConnect() async {
     final dbUrl = await DataConfigUtils.getDotenv();
@@ -39,11 +40,12 @@ class RecommendationCache {
     }
   }
 
-  Future<bool> _compareDateTime(String toVerify) async {
+  // ignore: unused_element
+  Future<bool> _compareDateTime(String toVerify, String collectionPath) async {
     bool isMoreSevenDays = false;
 
     try {
-      final collection = _db.collection(DataConfigUtils.collectionDB);
+      final collection = _db.collection(collectionPath);
       final items = await collection.find({'title': toVerify}).toList();
 
       final currentDate = DateTime.now();
@@ -54,9 +56,8 @@ class RecommendationCache {
           final createAt =
               DateTime.parse(createAtString); // Converter a string em DateTime
           final difference = currentDate.difference(createAt).inDays;
-
+          print(createAtString);
           if (difference > 7) {
-            //maior que 7 dias
             return isMoreSevenDays = true;
           } else {
             return isMoreSevenDays = false;
@@ -71,52 +72,96 @@ class RecommendationCache {
 
   Future<bool> _verifyRecommendation(String toVerify) async {
     try {
-      final collection = _db.collection(DataConfigUtils.collectionDB);
+      final collection = _db.collection(DataConfigUtils.collecRecommendation);
       final items = await collection.find({'title': toVerify}).toList();
+      print('Consultando a verificação...');
       return items
-          .isNotEmpty; // Não encontrou nenhuma recomendação com o título correspondente
+          .isEmpty; // Não encontrou nenhuma recomendação com o título correspondente
     } catch (e) {
       print('Erro ao obter conteúdo da coleção: $e');
       return false;
     }
   }
 
-  Future<void> updateRecommendation(String titleToUpdate) async {
-    try {
-      final collection = _db.collection(DataConfigUtils.collectionDB);
-      final currentDate = DateTime.now();
-
-      final updateData = {
-        'updatedAt': currentDate.toString(),
-      };
-
-      print('Recommendation $titleToUpdate updated successfully.');
-    } catch (e) {
-      print(e);
-    }
-  }
-
   Future<void> insertRecommendation(Map<String, dynamic> entity,
       String titleToVerify, Set titleResponse) async {
     await _dbConnect();
-    containRecommendation = await _verifyRecommendation(titleToVerify);
+    _containRecommendation = await _verifyRecommendation(titleToVerify);
 
-    if (containRecommendation == false) {
-      // Não possui recomendação
-      try {
-        if (titleResponse.isNotEmpty) {
-          await _db.collection(DataConfigUtils.collectionDB).insert(entity);
-          print('insert sucefull in ${DataConfigUtils.collectionDB}');
-        }
-      } catch (e) {
-        DatabaseErrorLogger.errorLogger(
-          tableName: _db.databaseName,
-          responseBody: e,
-          operationName: 'insertRecommendation',
-        );
-      }
+    final bool updateRecommendation = await _compareDateTime(
+        titleToVerify, DataConfigUtils.collecRecommendation);
+
+    if (updateRecommendation == true) {
+      final query = {'title': titleToVerify};
+      await _db
+          .collection(DataConfigUtils.collecRecommendation)
+          .replaceOne(query, entity);
     } else {
-      print('já possuímos recomendação para este mangá!');
+      if (_containRecommendation == false) {
+        try {
+          if (titleResponse.isNotEmpty) {
+            await _db
+                .collection(DataConfigUtils.collecRecommendation)
+                .insert(entity);
+            print('insert sucefull in ${DataConfigUtils.collecRecommendation}');
+          }
+        } catch (e) {
+          DatabaseErrorLogger.errorLogger(
+            tableName: _db.databaseName,
+            responseBody: e,
+            operationName: 'insertRecommendation',
+          );
+        }
+      } else {
+        print('já possuímos recomendação para este mangá!');
+      }
+    }
+    await _dbClose();
+  }
+
+  Future<bool> _verifyAlternativesT(String toVerify) async {
+    try {
+      final collection = _db.collection(DataConfigUtils.collecAlternativeT);
+      // Verifica se existe algum documento na coleção com o título igual
+      final count = await collection.count({"title": toVerify});
+      return count > 0; // Retorna true se existir um título correspondente
+    } catch (e) {
+      print(e);
+      return false; // Retorna false em caso de erro
+    }
+  }
+
+  Future<dynamic> insertAlternativeT(
+      Map<String, dynamic> entity, String toVerify, Set titleResponse) async {
+    await _dbConnect();
+
+    bool updateTitle =
+        await _compareDateTime(toVerify, DataConfigUtils.collecAlternativeT);
+
+    if (updateTitle == true) {
+      // Se o título for maior que 7 dias dá update
+      final query = {'title': toVerify};
+      await _db
+          .collection(DataConfigUtils.collecAlternativeT)
+          .replaceOne(query, entity);
+    } else {
+      _containAlternativeT = await _verifyAlternativesT(toVerify);
+
+      if (_containAlternativeT == false) {
+        try {
+          if (titleResponse.isNotEmpty) {
+            await _db
+                .collection(DataConfigUtils.collecAlternativeT)
+                .insert(entity);
+            print("Título $titleResponse inserido com sucesso!");
+          }
+        } catch (e) {
+          DatabaseErrorLogger.errorLogger(
+              tableName: _db.databaseName,
+              responseBody: e,
+              operationName: "InsertAlternativeT");
+        }
+      }
     }
     await _dbClose();
   }

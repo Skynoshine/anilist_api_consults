@@ -19,7 +19,8 @@ class DataConfigUtils {
   static final Uri urlBannersApi =
       Uri.parse('https://monolito.lucas-cm.com.br/v1/recommendations/list');
 
-  static final String collectionDB = "recommendation_cache";
+  static final String collecRecommendation = "recommendation_cache";
+  static final String collecAlternativeT = "alternative_titles_cache";
 
   static void requestlog({
     Map<String, dynamic>? header,

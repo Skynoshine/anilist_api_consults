@@ -25,10 +25,10 @@ void main() async {
   final server = await shelf_io.serve(handler, 'localhost', 8080);
 
   //http://localhost:8080/v1/manga/title-alternative?title=
-  await _alternativeTitle.searchTitleAlternativeEndpoint(app);
+  await _alternativeTitle.alternativeTitleEndpoint(app);
 
   //http://localhost:8080/v1/manga/recommendations?title=youjo senki
-  _recommendationsController.router(app);
+  _recommendationsController.recommendationEndpoint(app);
 
   print('Servidor rodando em ${server.address.host}:${server.port}');
 }

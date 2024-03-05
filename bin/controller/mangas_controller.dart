@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
-import '../core/data_config_utils.dart';
+import '../core/data_utils.dart';
 import '../entities/mangas_entity.dart';
 import '../repositories/mangas_repository.dart';
 
@@ -23,18 +23,18 @@ class SearchMangaController {
   );
 
   Future<dynamic> searchManga(String searchTerm) async {
-    final _body = {
+    final body = {
       'query': _mangaRepository.getTitleQuery(searchTerm: searchTerm)
     };
 
-    final _response = await http.post(
-      DataConfigUtils.urlAnilist,
-      headers: DataConfigUtils.headers,
-      body: jsonEncode(_body),
+    final response = await http.post(
+      Utils.urlAnilist,
+      headers: Utils.headers,
+      body: jsonEncode(body),
     );
 
-    if (_response.statusCode == 200) {
-      final data = jsonDecode(_response.body);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
 
       Set<String> updatedTitles =
           {}; // Utiliza um Set para armazenar os títulos únicos
@@ -60,7 +60,7 @@ class SearchMangaController {
 
       print(updatedTitlesJson);
     } else {
-      print('Error: ${_response.statusCode}, ${_response.body}');
+      print('Error: ${response.statusCode}, ${response.body}');
     }
   }
 
@@ -70,7 +70,7 @@ class SearchMangaController {
     router.get('/v1/manga/title-alternative/', (Request request) async {
       return Response.ok(
         await updatedTitlesJson,
-        headers: DataConfigUtils.headers,
+        headers: Utils.headers,
       );
     });
   }

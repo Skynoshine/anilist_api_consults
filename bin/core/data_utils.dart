@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:dotenv/dotenv.dart' as dotenv;
 
-class DataConfigUtils {
+class Utils {
   static final Map<String, String> headers = const {
     'Content-Type': 'application/json'
   };
@@ -29,6 +29,8 @@ class DataConfigUtils {
     dynamic responseCode,
     required String path,
     String? name,
+    String? title,
+    Object? error,
   }) {
     final now = DateTime.now();
     final formattedDateTime = '${now.day}/${now.month}/${now.year}'
@@ -39,9 +41,11 @@ class DataConfigUtils {
     --- Request Data e Hora: $formattedDateTime ---
     --- Request Header: $header ---
     --- Request Path: $path ---
+    --- Title Searched: $title ---
     --- Request Body: $body ---
     --- Response Body: $responseBody ---
     --- Response Code: $responseCode ---
+    --- Error: $error ---
     ---------------- FIM ----------------
     ''';
 
@@ -49,13 +53,14 @@ class DataConfigUtils {
   }
 }
 
-class DatabaseErrorLogger {
+class DbLogger {
   static void errorLogger({
     Map<String, dynamic>? queryParameters,
     dynamic responseBody,
     dynamic responseCode,
     required String? tableName,
     String? operationName,
+    Object? error,
   }) {
     final now = DateTime.now();
     final formattedDateTime = '${now.day}/${now.month}/${now.year}'
@@ -69,6 +74,7 @@ class DatabaseErrorLogger {
     --- Query Parameters: $queryParameters ---
     --- Response Body: $responseBody ---
     --- Response Code: $responseCode ---
+    --- Error: $error ---
     ---------------- END ----------------
     ''';
 

@@ -1,27 +1,25 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import '../core/data_config_utils.dart';
+import '../core/data_utils.dart';
 
 class BannersTitlesApi {
   static Future<List> getTitlesFromBanners() async {
-    print('running $getTitlesFromBanners');
-
+    print('consultando bannersApi');
     List titlesBanners = [];
-
-    final response = await http.get(DataConfigUtils.urlBannersApi);
-
-    DataConfigUtils.requestlog(
-      path: DataConfigUtils.urlBannersApi.toString(),
-      responseBody: response.body,
-      responseCode: response.statusCode,
-    );
+    final response = await http.get(Utils.urlBannersApi);
 
     if (response.statusCode == 200) {
       final decodedData = json.decode(response.body) as Map<String, dynamic>;
       titlesBanners = decodedData['data'] as List<dynamic>;
     } else {
-      print('Falha na requisição: ${response.statusCode}');
+      Utils.requestlog(
+        name: "GetTitlesFromBanners",
+        path: Utils.urlBannersApi.toString(),
+        responseCode: response.statusCode,
+        header: Utils.headers,
+        responseBody: response.body,
+      );
     }
     return titlesBanners;
   }
@@ -30,9 +28,6 @@ class BannersTitlesApi {
   static Future<Set> getBannerTitleResponse(
       List items, Set<String> recommendation) async {
     final Set<dynamic> titleResponseApi = {};
-
-    print('running $getBannerTitleResponse');
-
     try {
       for (var element in recommendation.toList()) {
         final int index = items.indexWhere(
@@ -46,7 +41,11 @@ class BannersTitlesApi {
         }
       }
     } catch (e) {
-      print('failed to get bannerTitleResponse: $e');
+      Utils.requestlog(
+        name: 'GetBannerTitleResponse',
+        path: Utils.collecAlternativeT,
+        error: e,
+      );
     }
     return titleResponseApi;
   }

@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
-import '../core/data_config_utils.dart';
+import '../core/data_utils.dart';
 import '../database/database_controller.dart';
 import '../entities/mangas_entity.dart';
 import '../entities/recommendation_entity.dart';
@@ -15,7 +15,6 @@ class SearchMangaController {
   List<MangasEntity> _mangaEntity = [];
   final SearchByTitle _search;
   final MangasRepository _mangaRepository;
-
   late dynamic updatedTitlesToJson;
 
   SearchMangaController(
@@ -23,44 +22,50 @@ class SearchMangaController {
     this._mangaRepository,
   );
 
-  Future<dynamic> searchManga(String searchTerm) async {
-    final _body = {
-      'query': _mangaRepository.getTitleQuery(searchTerm: searchTerm)
-    };
+  Future<dynamic> getTitles(String searchTerm) async {
+    Set<String> updatedTitles =
+        {}; // Utiliza um Set para armazenar os títulos únicos
+    final cache = RecommendationCache();
+    final bool containAlternativeT = await cache.verifyTitleCache(
+        collectionPath: Utils.collecAlternativeT, toVerify: searchTerm);
 
-    final _response = await http.post(
-      DataConfigUtils.urlAnilist,
-      headers: DataConfigUtils.headers,
-      body: jsonEncode(_body),
-    );
+    if (containAlternativeT == false) {
+      // Se não possuir no cache, realiza a consulta na api
+      final _body = {
+        'query': _mangaRepository.getTitleQuery(searchTerm: searchTerm)
+      };
 
-    if (_response.statusCode == 200) {
-      final data = jsonDecode(_response.body);
+      final _response = await http.post(
+        Utils.urlAnilist,
+        headers: Utils.headers,
+        body: jsonEncode(_body),
+      );
 
-      Set<String> updatedTitles =
-          {}; // Utiliza um Set para armazenar os títulos únicos
+      if (_response.statusCode == 200) {
+        final data = jsonDecode(_response.body);
 
-      final mangaDataList = data['data']['Page']['media'] as List<dynamic>;
+        final mangaDataList = data['data']['Page']['media'] as List<dynamic>;
 
-      for (var manga in mangaDataList) {
-        final title = manga['title'];
-        var romajiTitle = title['romaji'] ?? 'N/A';
-        var englishTitle = title['english'] ?? 'N/A';
+        for (var manga in mangaDataList) {
+          final title = manga['title'];
+          var romajiTitle = title['romaji'] ?? 'N/A';
+          var englishTitle = title['english'] ?? 'N/A';
 
-        _mangaEntity
-            .add(MangasEntity(romajiTitle, englishTitle, 'nativeTitle', []));
+          _mangaEntity
+              .add(MangasEntity(romajiTitle, englishTitle, 'nativeTitle', []));
 
-        await _search.filterBySpecificName(
-          searchTerm.toLowerCase(),
-          updatedTitles,
-          englishTitle.toString().toLowerCase(),
-          romajiTitle.toString().toLowerCase(),
-        ); //Filtra a pesquisa
+          await _search.filterBySpecificName(
+            searchTerm.toLowerCase(),
+            updatedTitles,
+            englishTitle.toString().toLowerCase(),
+            romajiTitle.toString().toLowerCase(),
+          ); //Filtra a pesquisa
+        }
+      } else {
+        print('Error: ${_response.statusCode}, ${_response.body}');
       }
-      return updatedTitlesToJson = jsonEncode(updatedTitles.toList());
-    } else {
-      print('Error: ${_response.statusCode}, ${_response.body}');
     }
+    return updatedTitlesToJson = jsonEncode(updatedTitles.toList());
   }
 
   Future<Future> _insertAlternativeT(String title, Set alternativeT) async {
@@ -71,27 +76,30 @@ class SearchMangaController {
       title: title,
       alternativeTitle: alternativeT.toList(),
     );
-
     return cache.insertAlternativeT(entity.toJson(), title, alternativeT);
   }
 
-  Future<dynamic> searchTitleAlternativeEndpoint(Router router) async {
+  Future<dynamic> alternativeTitleEndpoint(Router router) async {
     router.get('/v1/manga/title-alternative', (Request request) async {
       final searchQuery =
           await request.url.queryParameters['title']!.toLowerCase();
-      await searchManga(searchQuery.toString());
 
-      final List<dynamic> updatedTitlesJson = jsonDecode(updatedTitlesToJson);
+      await getTitles(searchQuery.toString());
+      final List updatedTitlesJson = jsonDecode(updatedTitlesToJson);
 
       try {
         await _insertAlternativeT(searchQuery, Set.from(updatedTitlesJson));
       } catch (e) {
-        print(e);
+        Utils.requestlog(
+          name: "SearchTitleAlternativeEndpoint",
+          path: request.url.toString(),
+          title: searchQuery,
+          error: e,
+        );
       }
-
       return Response.ok(
         await updatedTitlesToJson,
-        headers: DataConfigUtils.headers,
+        headers: Utils.headers,
       );
     });
   }

@@ -1,5 +1,5 @@
 import '../repositories/recommendation_repository.dart';
-import '../core/data_config_utils.dart';
+import '../core/data_utils.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,26 +7,18 @@ import 'dart:convert';
 class RecommendationAnilistApi {
   static Future<List<String>> getRecommendationAnilist(
       String titleForSearch) async {
-    print("running $getRecommendationAnilist");
-
+    print('consultando api anilist...');
     final body = {
-      'query': RecommendationRepository.getQuery(title: titleForSearch)
+      'query': await RecommendationRepository()
+          .getRecommendationQuery(title: titleForSearch)
     };
 
     final List<String> _titlesAnilist = [];
 
     final response = await http.post(
-      DataConfigUtils.urlAnilist,
-      headers: DataConfigUtils.headers,
+      Utils.urlAnilist,
+      headers: Utils.headers,
       body: jsonEncode(body),
-    );
-
-    DataConfigUtils.requestlog(
-      path: DataConfigUtils.urlAnilist.toString(),
-      header: DataConfigUtils.headers,
-      body: body,
-      responseBody: response.body,
-      responseCode: response.statusCode,
     );
 
     if (response.statusCode == 200) {
@@ -43,7 +35,14 @@ class RecommendationAnilistApi {
         if (titleRomaji != null) _titlesAnilist.add(titleRomaji);
       }
     } else {
-      print('Falha na requisição: ${response.statusCode}');
+      Utils.requestlog(
+        name: 'GetRecommendationAnilist',
+        title: titleForSearch,
+        path: Utils.urlAnilist.toString(),
+        header: Utils.headers,
+        responseCode: response.statusCode,
+        responseBody: response.body,
+      );
     }
     return _titlesAnilist;
   }

@@ -71,15 +71,14 @@ class RecommendationController {
 
   Future<dynamic> recommendationEndpoint(Router router) async {
     final cache = RecommendationCache();
-
     router.get('/v1/manga/recommendations', (Request request) async {
+      print('recommendationEndpoint');
       final titleQuery = request.url.queryParameters['title'];
       final isRepeat = await cache.verifyTitleCache(
           collectionPath: Utils.collecRecommendation, toVerify: titleQuery!);
 
       final content =
           await cache.getCacheContent(Utils.collecRecommendation, titleQuery);
-      print(content);
 
       if (isRepeat == true) {
         return Response.ok(

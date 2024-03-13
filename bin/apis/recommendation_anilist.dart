@@ -8,6 +8,7 @@ class RecommendationAnilistApi {
   static Future<List<String>> getRecommendationAnilist(
       String titleForSearch) async {
     print('consultando api anilist...');
+    
     final body = {
       'query': await RecommendationRepository()
           .getRecommendationQuery(title: titleForSearch)

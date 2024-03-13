@@ -22,14 +22,12 @@ class SearchMangaController {
     this._mangaRepository,
   );
 
-  Future<dynamic> getTitles(String searchTerm) async {
+  Future<dynamic> getTitles(
+      String searchTerm, RecommendationCache cache, bool containCache) async {
     Set<String> updatedTitles =
         {}; // Utiliza um Set para armazenar os títulos únicos
-    final cache = RecommendationCache();
-    final bool containAlternativeT = await cache.verifyTitleCache(
-        collectionPath: Utils.collecAlternativeT, toVerify: searchTerm);
 
-    if (containAlternativeT == false) {
+    if (containCache == false) {
       // Se não possuir no cache, realiza a consulta na api
       final _body = {
         'query': _mangaRepository.getTitleQuery(searchTerm: searchTerm)
@@ -49,7 +47,7 @@ class SearchMangaController {
         for (var manga in mangaDataList) {
           final title = manga['title'];
           var romajiTitle = title['romaji'] ?? 'N/A';
-          var englishTitle = title['english'] ?? 'N/A';
+          var englishTitle = title['english'] ?? 'N/A'  ;
 
           _mangaEntity
               .add(MangasEntity(romajiTitle, englishTitle, 'nativeTitle', []));
@@ -68,9 +66,8 @@ class SearchMangaController {
     return updatedTitlesToJson = jsonEncode(updatedTitles.toList());
   }
 
-  Future<Future> _insertAlternativeT(String title, Set alternativeT) async {
-    final cache = RecommendationCache();
-
+  Future<Future> _insertAlternativeT(
+      String title, Set alternativeT, RecommendationCache cache) async {
     final entity = AlternativeTitleEntity(
       createAt: DateTime.now(),
       title: title,
@@ -81,26 +78,42 @@ class SearchMangaController {
 
   Future<dynamic> alternativeTitleEndpoint(Router router) async {
     router.get('/v1/manga/title-alternative', (Request request) async {
+      final cache = RecommendationCache();
       final searchQuery =
           await request.url.queryParameters['title']!.toLowerCase();
 
-      await getTitles(searchQuery.toString());
+      final bool containCache = await cache.verifyTitleCache(
+          collectionPath: Utils.collecAlternativeT, toVerify: searchQuery);
+
+      await getTitles(searchQuery.toString(), cache, containCache);
       final List updatedTitlesJson = jsonDecode(updatedTitlesToJson);
 
-      try {
-        await _insertAlternativeT(searchQuery, Set.from(updatedTitlesJson));
-      } catch (e) {
-        Utils.requestlog(
-          name: "SearchTitleAlternativeEndpoint",
-          path: request.url.toString(),
-          title: searchQuery,
-          error: e,
+      print("alternativeEndpoint");
+      final content =
+          await cache.getCacheContent(Utils.collecAlternativeT, searchQuery);
+
+      if (containCache == true) {
+        return Response.ok(
+          jsonEncode(content),
+          headers: Utils.headers,
+        );
+      } else {
+        try {
+          await _insertAlternativeT(
+              searchQuery, Set.from(updatedTitlesJson), cache);
+        } catch (e) {
+          Utils.requestlog(
+            name: "SearchTitleAlternativeEndpoint",
+            path: request.url.toString(),
+            title: searchQuery,
+            error: e,
+          );
+        }
+        return Response.ok(
+          await updatedTitlesToJson,
+          headers: Utils.headers,
         );
       }
-      return Response.ok(
-        await updatedTitlesToJson,
-        headers: Utils.headers,
-      );
     });
   }
 }

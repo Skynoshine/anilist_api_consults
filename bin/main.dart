@@ -21,7 +21,7 @@ void main() async {
 
   final handler =
       const Pipeline().addMiddleware(logRequests()).addHandler(_handleRequest);
-
+       
   final server = await shelf_io.serve(handler, 'localhost', 8080);
 
   //http://localhost:8080/v1/manga/title-alternative?title=

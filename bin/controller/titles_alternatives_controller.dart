@@ -8,10 +8,10 @@ import '../core/utils.dart';
 import '../core/filters.dart';
 import '../database/database_controller.dart';
 import '../entities/titles_entity.dart';
-import '../querys/titles_query.dart';
+import '../repository/titles_repository.dart';
 
 class SearchMangaController {
-  List<TitlesObject> _mangaEntity = [];
+  List<TitlesDTO> _mangaEntity = [];
   final FilterByTitle _filter;
   final TitlesQuery _mangaRepository;
   late dynamic updatedTitlesToJson;
@@ -49,7 +49,7 @@ class SearchMangaController {
           var englishTitle = title['english'] ?? 'N/A';
 
           _mangaEntity
-              .add(TitlesObject(romajiTitle, englishTitle, 'nativeTitle', []));
+              .add(TitlesDTO(romajiTitle, englishTitle, 'nativeTitle', []));
 
           await _filter.filterBySpecificName(
             searchTerm.toLowerCase(),

@@ -5,7 +5,7 @@ import 'package:shelf_router/shelf_router.dart';
 import 'controller/recommendation_controller.dart';
 import 'controller/titles_alternatives_controller.dart';
 import 'core/filters.dart';
-import 'querys/titles_query.dart';
+import 'repository/titles_repository.dart';
 
 void main() async {
   final app = Router();

@@ -1,4 +1,4 @@
-import '../querys/recommendation_query.dart';
+import '../repository/recommendation_repository.dart';
 import '../core/utils.dart';
 
 import 'package:http/http.dart' as http;

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../core/utils.dart';
-import '../querys/images_query.dart';
+import '../repository/images_repository.dart';
 
 class ImagesApi {
   Future<Map<String, dynamic>> getImages(String searchTerm) async {

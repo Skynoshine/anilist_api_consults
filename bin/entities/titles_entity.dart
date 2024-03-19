@@ -1,10 +1,10 @@
-class TitlesObject {
+class TitlesDTO {
   final String romajiTitle;
   final String englishTitle;
   final String nativeTitle;
   final List<dynamic> titles;
 
-  TitlesObject(
+  TitlesDTO(
     this.romajiTitle,
     this.englishTitle,
     this.nativeTitle,
@@ -31,4 +31,3 @@ class AlternativeTitleEntity {
     };
   }
 }
-

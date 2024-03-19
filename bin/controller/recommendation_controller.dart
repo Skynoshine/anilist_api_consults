@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
-import '../apis/banners_titles.dart';
+import '../apis/banners_mangaeasy.dart';
 import '../apis/recommendation_anilist.dart';
-import '../core/data_utils.dart';
+import '../core/utils.dart';
 import '../database/database_controller.dart';
 import '../entities/recommendation_entity.dart';
 
@@ -32,7 +32,7 @@ class RecommendationController {
   Future _getRecommendations(String titleQuery, request) async {
     final cache = RecommendationCache();
 
-    final titlesBanners = await BannersTitlesApi.getTitlesFromBanners();
+    final titlesBanners = await MangaEasyBannersApi.getTitlesFromBanners();
 
     final titlesAnilist =
         await RecommendationAnilistApi.getRecommendationAnilist(
@@ -42,7 +42,7 @@ class RecommendationController {
         titlesBanners.map((e) => e['title'].toString()).toList(),
         titlesAnilist);
 
-    final titleResponseApi = await BannersTitlesApi.getBannerTitleResponse(
+    final titleResponseApi = await MangaEasyBannersApi.getBannerTitleResponse(
         titlesBanners, recommendation);
 
     final entity = RecommendationEntity(

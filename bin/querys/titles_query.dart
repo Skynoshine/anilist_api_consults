@@ -1,4 +1,4 @@
-class MangasRepository {
+class TitlesQuery {
   String getTitleQuery({required String searchTerm}) {
     return '''
       query {

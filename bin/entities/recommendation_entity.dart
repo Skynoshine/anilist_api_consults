@@ -17,23 +17,3 @@ class RecommendationEntity {
     };
   }
 }
-
-class AlternativeTitleEntity {
-  final DateTime createAt;
-  final String title;
-  final List alternativeTitle;
-
-  AlternativeTitleEntity({
-    required this.createAt,
-    required this.title,
-    required this.alternativeTitle,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'createAt': createAt.toString(),
-      'title': title,
-      'alternativeTitle': alternativeTitle,
-    };
-  }
-}

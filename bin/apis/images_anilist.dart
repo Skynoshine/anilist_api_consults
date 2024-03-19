@@ -1,17 +1,17 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import '../core/data_utils.dart';
-import '../repositories/images_repository.dart';
+import '../core/utils.dart';
+import '../querys/images_query.dart';
 
 class ImagesApi {
   Future<Map<String, dynamic>> getImages(String searchTerm) async {
     Map<String, dynamic> _images = {};
 
     final _body =
-        await {'query': ImagesRepository().getImages(searchTerm: searchTerm)};
+        await {'query': ImagesQuery().getImagesQuery(searchTerm: searchTerm)};
 
-    final _response = await http.post(Utils.urlAnilist,
+    final _response = await http.post(Utils.anilistUri,
         headers: Utils.headers, body: jsonEncode(_body));
 
     if (_response.statusCode == 200) {
@@ -25,7 +25,7 @@ class ImagesApi {
     } else {
       Utils.requestlog(
         name: "getImages",
-        path: Utils.urlAnilist.toString(),
+        path: Utils.anilistUri.toString(),
       );
     }
     return _images;

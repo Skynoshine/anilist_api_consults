@@ -4,14 +4,14 @@ import 'package:shelf_router/shelf_router.dart';
 
 import 'controller/recommendation_controller.dart';
 import 'controller/titles_alternatives_controller.dart';
-import 'core/filterByName.dart';
-import 'repositories/mangas_repository.dart';
+import 'core/filters.dart';
+import 'querys/titles_query.dart';
 
 void main() async {
   final app = Router();
 
   final _alternativeTitle =
-      SearchMangaController(SearchByTitle(), MangasRepository());
+      SearchMangaController(FilterByTitle(), TitlesQuery());
 
   final _recommendationsController = RecommendationController();
 
@@ -21,7 +21,7 @@ void main() async {
 
   final handler =
       const Pipeline().addMiddleware(logRequests()).addHandler(_handleRequest);
-       
+
   final server = await shelf_io.serve(handler, 'localhost', 8080);
 
   //http://localhost:8080/v1/manga/title-alternative?title=

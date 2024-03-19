@@ -1,5 +1,5 @@
-class ImagesRepository {
-  String getImages({required String searchTerm}) {
+class ImagesQuery {
+  String getImagesQuery({required String searchTerm}) {
     return '''
         query {
       Media(search: "$searchTerm", type: MANGA) {

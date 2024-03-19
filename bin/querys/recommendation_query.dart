@@ -1,4 +1,4 @@
-class RecommendationRepository {
+class RecommendationQuery {
   String getRecommendationQuery({required String title}) {
     return '''
     query{

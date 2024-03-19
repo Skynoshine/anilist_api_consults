@@ -1,5 +1,5 @@
-import '../repositories/recommendation_repository.dart';
-import '../core/data_utils.dart';
+import '../querys/recommendation_query.dart';
+import '../core/utils.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,17 +7,16 @@ import 'dart:convert';
 class RecommendationAnilistApi {
   static Future<List<String>> getRecommendationAnilist(
       String titleForSearch) async {
-    print('consultando api anilist...');
-    
+
     final body = {
-      'query': await RecommendationRepository()
+      'query': await RecommendationQuery()
           .getRecommendationQuery(title: titleForSearch)
     };
 
     final List<String> _titlesAnilist = [];
 
     final response = await http.post(
-      Utils.urlAnilist,
+      Utils.anilistUri,
       headers: Utils.headers,
       body: jsonEncode(body),
     );
@@ -39,7 +38,7 @@ class RecommendationAnilistApi {
       Utils.requestlog(
         name: 'GetRecommendationAnilist',
         title: titleForSearch,
-        path: Utils.urlAnilist.toString(),
+        path: Utils.anilistUri.toString(),
         header: Utils.headers,
         responseCode: response.statusCode,
         responseBody: response.body,

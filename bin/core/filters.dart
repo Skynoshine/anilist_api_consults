@@ -1,17 +1,11 @@
-class SearchByTitle {
+class FilterByTitle {
   bool _containsIgnoredKeywords(String title) {
     final ignoredKeywords = [
       'Special One-Shot',
       'Special Chapter',
       ':'
     ]; // Palavras-chave a serem ignoradas
-
-    for (var keyword in ignoredKeywords) {
-      if (title.contains(keyword)) {
-        return true;
-      }
-    }
-    return false;
+    return ignoredKeywords.contains(title);
   }
 
   Future<void> filterBySpecificName(

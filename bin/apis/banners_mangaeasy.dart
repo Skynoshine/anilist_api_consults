@@ -1,13 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import '../core/data_utils.dart';
+import '../core/utils.dart';
 
-class BannersTitlesApi {
+class MangaEasyBannersApi {
   static Future<List> getTitlesFromBanners() async {
-    print('consultando bannersApi');
     List titlesBanners = [];
-    final response = await http.get(Utils.urlBannersApi);
+    final response = await http.get(Utils.mangaEasyBanners);
 
     if (response.statusCode == 200) {
       final decodedData = json.decode(response.body) as Map<String, dynamic>;
@@ -15,7 +14,7 @@ class BannersTitlesApi {
     } else {
       Utils.requestlog(
         name: "GetTitlesFromBanners",
-        path: Utils.urlBannersApi.toString(),
+        path: Utils.mangaEasyBanners.toString(),
         responseCode: response.statusCode,
         header: Utils.headers,
         responseBody: response.body,

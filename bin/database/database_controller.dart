@@ -1,9 +1,9 @@
 import 'package:mongo_dart/mongo_dart.dart';
 
-import '../core/data_utils.dart';
+import '../core/utils.dart';
 
 class RecommendationCache {
-  late Db _db; // Banco de dados MongoDB
+  late Db _db;
   final String _titlesCollection = Utils.collecAlternativeT;
   final String _recommendationCollection = Utils.collecRecommendation;
 
@@ -164,11 +164,11 @@ class RecommendationCache {
     final collection = _db.collection(collectionPath);
     final table = where.eq(await "title", titleSearch.toLowerCase());
 
-    final  response = await collection.findOne(table);
+    final response = await collection.findOne(table);
 
     if (response != null) {
       response.remove("_id");
-      response.remove("recommendation""_uid");
+      response.remove("recommendation" "_uid");
     }
 
     await _dbClose("getCacheContent");

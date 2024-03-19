@@ -21,3 +21,5 @@ class ImagesEntity {
     return ImagesEntity(extraLarge, large, medium, color);
   }
 }
+
+//EM PRODUÇÃO

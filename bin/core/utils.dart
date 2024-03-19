@@ -14,9 +14,9 @@ class Utils {
     return urlMongoDB!;
   }
 
-  static final Uri urlAnilist = Uri.parse("https://graphql.anilist.co");
+  static final Uri anilistUri = Uri.parse("https://graphql.anilist.co");
 
-  static final Uri urlBannersApi =
+  static final Uri mangaEasyBanners =
       Uri.parse('https://monolito.lucas-cm.com.br/v1/recommendations/list');
 
   static final String collecRecommendation = "recommendation_cache";
